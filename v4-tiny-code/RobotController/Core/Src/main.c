@@ -32,8 +32,9 @@
 #include "keys.h"
 #include "led.h"
 #include "mpu6500dmp.h"
-#include "amt1450_uart.h"
 #include "ArmSolution.h"
+#include "chassis_move.h"
+#include "Stepper_Motor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,7 +103,6 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM5_Init();
   MX_TIM6_Init();
-  MX_USART3_UART_Init();
   MX_TIM7_Init();
   MX_ADC3_Init();
   MX_I2C1_Init();
@@ -111,9 +111,12 @@ int main(void)
   MX_TIM12_Init();
   MX_TIM13_Init();
   MX_TIM14_Init();
+  MX_UART5_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   MPU6500_DMP_Init(); // MPU6500加速度传感器初始化
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,8 +125,8 @@ int main(void)
   //===================电机启动================
   MotorDriver_Init();
   //一旦开启start后，就开始耗电了，一个电机大概120ma的电流（根据电机内阻情况）,MotorDriver_OFF才能关闭耗电。
-  // MotorDriver_Start(4, PWM_DUTY_LIMIT / 2);
-  // MotorDriver_Start(3, PWM_DUTY_LIMIT / 2);
+  MotorDriver_Start(4, MOTOR_DRIVER_PWM_DUTY_LIMIT / 2);
+  MotorDriver_Start(3, MOTOR_DRIVER_PWM_DUTY_LIMIT / 2);
   MotorDriver_Start(2, MOTOR_DRIVER_PWM_DUTY_LIMIT / 2);
   MotorDriver_Start(1, MOTOR_DRIVER_PWM_DUTY_LIMIT / 2);
 
@@ -133,14 +136,6 @@ int main(void)
   MotorController_Enable(ENABLE);
   int nSpeed = 0; // 转速变量
 
-  //===================红外传感器启动===============
-  AMT1450_UART_Cmd(ENABLE);
-
-  //=================led测试=================
-  FnLED_SetRGB(FnLED2, 33, 0, 0, 1);
-  uint8_t led_val = 0; // RGB变换中Green色数值变化变量
-  HAL_Delay(500);      // 延迟500ms后关闭led2
-  FnLED_OFF(FnLED2);
 
   //=================舵机控制测试=============
   ArmDriver_Init();
@@ -160,53 +155,28 @@ int main(void)
     if (Key_Released(1) == 1)
     {
       nSpeed += 100;
-      MotorController_SetSpeed(1, -nSpeed);
-      MotorController_SetSpeed(2, nSpeed);
-      // MotorController_SetSpeed(3,nSpeed);
-      // MotorController_SetSpeed(4,nSpeed);
+			StepperMotor_SetPosition(500);
+      chassis_move(50,90*3.14/180,0);
+//      MotorController_SetSpeed(1, -nSpeed);
+//      MotorController_SetSpeed(2, nSpeed);
+//      MotorController_SetSpeed(3,nSpeed);
+//      MotorController_SetSpeed(4,nSpeed);
     }
     if (Key_Released(2) == 1)
     {
       nSpeed -= 100;
+			StepperMotor_SetPosition(20);
       MotorController_SetSpeed(1, -nSpeed);
       MotorController_SetSpeed(2, nSpeed);
       // MotorController_SetSpeed(3,nSpeed);
       // MotorController_SetSpeed(4,nSpeed);
     }
 
-    //===============LED测试程序---绿色渐变实现=============
-    FnLED_SetRGB(FnLED3, 0, led_val, 0, 1);
-    led_val += 1;
-    if (led_val > 66)
-      led_val = 0;
-    HAL_Delay(7);
-
     //===================MPU6500测试（加速度传感器）===============
     /* 读取mpu6500数据，俯仰角数据在函数内部可以看 */
-    Get_MPU6500_DMP_Data();
-
-    //==================红外传感器数据采集========================
-    //get_AMT1450Data_UART函数作用在函数内部说明。
-    get_AMT1450Data_UART(&begin, &jump, count);
-    if (jump == 2)
-      position = 0.5f * (count[0] + count[1]);
-    //根据检测到的循迹线位置，显示不同的LED颜色。
-    if (position>72)
-    {
-      FnLED_SetRGB(FnLED2, 33, 0, 0, 1);
-    }else{
-      FnLED_SetRGB(FnLED2, 0, 0, 33, 1);
-    }
-    //===================舵机控制测试=======================
-    servo_pwm += 5;
-    if (servo_pwm > 180)
-      servo_pwm = 0;
-    for (uint8_t i = 0; i < 8; i++)
-    {
-      SetServoAngle(i, servo_pwm);
-    }
-
-    HAL_Delay(500);
+//    Get_MPU6500_DMP_Data();
+//      chassis_move(0,0,0);
+//    HAL_Delay(500);
 
     
   }

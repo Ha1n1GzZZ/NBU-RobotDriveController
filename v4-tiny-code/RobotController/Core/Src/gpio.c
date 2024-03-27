@@ -58,14 +58,18 @@ void MX_GPIO_Init(void)
                           |BEEP_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Stepper_En_GPIO_Port, Stepper_En_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FnLED1_GPIO_Port, FnLED1_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(M4_OFF_GPIO_Port, M4_OFF_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, M4_nSLEEP_Pin|M3_IN1_Pin|M3_OFF_Pin|M3_nSLEEP_Pin
-                          |M1_OFF_Pin|M1_IN1_Pin|M1_nSLEEP_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, Stepper_Stp_Pin|Stepper_Dir_Pin|M4_nSLEEP_Pin|M3_IN1_Pin
+                          |M3_OFF_Pin|M3_nSLEEP_Pin|M1_OFF_Pin|M1_IN1_Pin
+                          |M1_nSLEEP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PEPin PEPin PEPin PEPin
                            PEPin PEPin PEPin PEPin
@@ -77,6 +81,13 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = Stepper_En_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(Stepper_En_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PEPin PEPin */
   GPIO_InitStruct.Pin = FnKEY2_Pin|FnKEY1_Pin;
@@ -104,19 +115,21 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(M4_OFF_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PDPin PDPin PDPin PDPin
+                           PDPin PDPin PDPin PDPin
+                           PDPin */
+  GPIO_InitStruct.Pin = Stepper_Stp_Pin|Stepper_Dir_Pin|M4_nSLEEP_Pin|M3_IN1_Pin
+                          |M3_OFF_Pin|M3_nSLEEP_Pin|M1_OFF_Pin|M1_IN1_Pin
+                          |M1_nSLEEP_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PDPin PDPin */
   GPIO_InitStruct.Pin = M4_nFAULT_Pin|M1_nFAULT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PDPin PDPin PDPin PDPin
-                           PDPin PDPin PDPin */
-  GPIO_InitStruct.Pin = M4_nSLEEP_Pin|M3_IN1_Pin|M3_OFF_Pin|M3_nSLEEP_Pin
-                          |M1_OFF_Pin|M1_IN1_Pin|M1_nSLEEP_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */

@@ -67,6 +67,8 @@ void Error_Handler(void);
 #define SWITCH2_GPIO_Port GPIOE
 #define SWITCH3_Pin GPIO_PIN_4
 #define SWITCH3_GPIO_Port GPIOE
+#define Stepper_En_Pin GPIO_PIN_13
+#define Stepper_En_GPIO_Port GPIOC
 #define VBAT_SENSE_Pin GPIO_PIN_0
 #define VBAT_SENSE_GPIO_Port GPIOC
 #define M1_IPROPI_Pin GPIO_PIN_4
@@ -97,6 +99,10 @@ void Error_Handler(void);
 #define M4_IN1_GPIO_Port GPIOE
 #define M4_OFF_Pin GPIO_PIN_12
 #define M4_OFF_GPIO_Port GPIOB
+#define Stepper_Stp_Pin GPIO_PIN_8
+#define Stepper_Stp_GPIO_Port GPIOD
+#define Stepper_Dir_Pin GPIO_PIN_9
+#define Stepper_Dir_GPIO_Port GPIOD
 #define M4_nFAULT_Pin GPIO_PIN_10
 #define M4_nFAULT_GPIO_Port GPIOD
 #define M4_nSLEEP_Pin GPIO_PIN_11

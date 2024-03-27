@@ -27,7 +27,7 @@
 #include "motor_controller.h"
 #include "backend_loop.h"
 #include "usart.h"
-#include "amt1450_uart.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,7 +67,8 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
-extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart5;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -253,17 +254,17 @@ void TIM4_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles USART3 global interrupt.
+  * @brief This function handles USART2 global interrupt.
   */
-void USART3_IRQHandler(void)
+void USART2_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART3_IRQn 0 */
+  /* USER CODE BEGIN USART2_IRQn 0 */
 
-  /* USER CODE END USART3_IRQn 0 */
-  HAL_UART_IRQHandler(&huart3);
-  /* USER CODE BEGIN USART3_IRQn 1 */
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
 
-  /* USER CODE END USART3_IRQn 1 */
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /**
@@ -278,6 +279,20 @@ void TIM5_IRQHandler(void)
   /* USER CODE BEGIN TIM5_IRQn 1 */
 
   /* USER CODE END TIM5_IRQn 1 */
+}
+
+/**
+  * @brief This function handles UART5 global interrupt.
+  */
+void UART5_IRQHandler(void)
+{
+  /* USER CODE BEGIN UART5_IRQn 0 */
+
+  /* USER CODE END UART5_IRQn 0 */
+  HAL_UART_IRQHandler(&huart5);
+  /* USER CODE BEGIN UART5_IRQn 1 */
+
+  /* USER CODE END UART5_IRQn 1 */
 }
 
 /**
@@ -353,22 +368,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   UNUSED(huart);
 
 	
-	// if(huart->Instance==USART3){
+	 if(huart->Instance==USART2){
 
-	//	USART_GetChar(&uart3Data,uart3Data.aRxBuffer);//字节数据保存到缓冲区中
-	// 	HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3Data.aRxBuffer, 1);   //再开启接收中断
+		USART_GetChar(&uart2Data,uart2Data.aRxBuffer);//字节数据保存到缓冲区中
+	 	HAL_UART_Receive_IT(&huart2, (uint8_t *)&uart2Data.aRxBuffer, 1);   //再开启接收中断
 		
-	// 	if(uart3Data.USART_FrameFlag==1){//如果数据帧完整，则发回数据
-	// 			HAL_UART_Transmit(&huart3, (uint8_t *)&uart3Data.RxBuffer, FRAME_BYTE_LENGTH,10); //将收到的信息发送出去
-	// 			while(HAL_UART_GetState(&huart3) == HAL_UART_STATE_BUSY_TX);//检测UART发送结束
-	// 			uart3Data.Rx_Cnt = 0;
-	// 			uart3Data.USART_FrameFlag=0;
-	// 	}
+		if(uart2Data.USART_FrameFlag==1){//如果数据帧完整
+	 			uart2Data.Rx_Cnt = 0;
+	 			uart2Data.USART_FrameFlag=0;
+				for(uint8_t i=0;i<15;i++) data[i]=uart2Data.RxBuffer[i];
+	 	}
 		
-	// }
-	if(huart->Instance==USART3){
-		AMT1450_GetChar(uart3_rx,&amt1450_1_Rx);//字节数据保存到缓冲区中
-		HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3_rx, 1);   //再开启接收中断
+	 }
+	if(huart->Instance==UART5){
+
 		
 	}
 }

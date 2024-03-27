@@ -33,9 +33,9 @@
 
 /* ------------ 电机闭环控制相关 -------------- */
 /* 编码器等效分辨率，即轮子转一圈输出的脉冲个数，通常=编码器其分辨率x电机减速比 */
-#define MOTOR_CONTROLLER_ENCODER_RESOLUTION (15000)
+#define MOTOR_CONTROLLER_ENCODER_RESOLUTION (13500)
 /* 电机外接车轮的直径 单位mm 可为float类型数据 */
-#define MOTOR_WHEEL_DIAMETER                (82.0f)
+#define MOTOR_WHEEL_DIAMETER                (30.0f)
 /* 电机最大加速度限制 单位mm/s^(-2) */
 #define MOTOR_CONTROLLER_ACC_LIMIT          (800)
 /* $ 电机闭环控制器控制周期，使用了定时器6，需根据定时器6中断周期设定 单位ms  */
