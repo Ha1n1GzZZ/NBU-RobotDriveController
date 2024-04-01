@@ -35,6 +35,7 @@
 #include "ArmSolution.h"
 #include "chassis_move.h"
 #include "Stepper_Motor.h"
+#include "Upper_Data_Process.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -151,26 +152,28 @@ int main(void)
     //
     // 不断循环执行的代码块
     //
+		
+		data_process(data);
     //============================按键实现转速改变=====================
-    if (Key_Released(1) == 1)
-    {
-      nSpeed += 100;
-			StepperMotor_SetPosition(500);
-      chassis_move(50,90*3.14/180,0);
+//    if (Key_Released(1) == 1)
+//    {
+//      nSpeed += 100;
+////			StepperMotor_SetPosition(500);
+  //    chassis_move(100,90*3.14/180,0);
+////      MotorController_SetSpeed(1, -nSpeed);
+////      MotorController_SetSpeed(2, nSpeed);
+////      MotorController_SetSpeed(3,nSpeed);
+////      MotorController_SetSpeed(4,nSpeed);
+//    }
+//    if (Key_Released(2) == 1)
+//    {
+//      nSpeed -= 100;
+//			StepperMotor_SetPosition(20);
 //      MotorController_SetSpeed(1, -nSpeed);
 //      MotorController_SetSpeed(2, nSpeed);
-//      MotorController_SetSpeed(3,nSpeed);
-//      MotorController_SetSpeed(4,nSpeed);
-    }
-    if (Key_Released(2) == 1)
-    {
-      nSpeed -= 100;
-			StepperMotor_SetPosition(20);
-      MotorController_SetSpeed(1, -nSpeed);
-      MotorController_SetSpeed(2, nSpeed);
-      // MotorController_SetSpeed(3,nSpeed);
-      // MotorController_SetSpeed(4,nSpeed);
-    }
+//      // MotorController_SetSpeed(3,nSpeed);
+//      // MotorController_SetSpeed(4,nSpeed);
+//    }
 
     //===================MPU6500测试（加速度传感器）===============
     /* 读取mpu6500数据，俯仰角数据在函数内部可以看 */

@@ -17,8 +17,8 @@ Chassis chassis;
 void chassis_move(float target_speed, float target_theta, float target_omega) //target_speed: mm/s, target_theta: rad, target_omega: rad/s 角度值由imu提供,
 {
 		chassis.Radius = 300; //底盘半径
-	  Get_MPU6500_DMP_Data();  //尚未解决mpu数据问题
-		chassis.angle+=0.01*target_omega;//底盘自旋情况下，改变机器人坐标系和全局坐标系的粗略计算
+//	  Get_MPU6500_DMP_Data();  //尚未解决mpu数据问题
+		chassis.angle=0;//底盘自旋情况下，改变机器人坐标系和全局坐标系的粗略计算
 //		chassis.angle=mpu_yaw*3.14/180;
     float speed[4]; //速度计算值
     float sin_ang = sin(chassis.angle);   //全局坐标系下的sin角度

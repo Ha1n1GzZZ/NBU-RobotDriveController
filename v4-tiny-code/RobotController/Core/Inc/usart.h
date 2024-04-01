@@ -39,10 +39,10 @@ extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN Private defines */
 
 
-#define FRAME_BYTE_LENGTH 15 // 串口通讯帧数据的字节数（含帧头和帧尾），
+#define FRAME_BYTE_LENGTH 12 // 串口通讯帧数据的字节数（含帧头和帧尾），
                           
-#define FRAME_START 0x0D     // 帧头(回车)
-#define FRAME_END 0x0A       // 帧尾(换行)
+#define FRAME_START 0x42     // 帧头(Begin)
+#define FRAME_END 0x5A       // 帧尾(Z)
 
 typedef struct {
     char RxBuffer[FRAME_BYTE_LENGTH];  // 接收缓冲
@@ -54,7 +54,7 @@ typedef struct {
  extern UartStruct uart2Data;  // usart2的数据结构体
 
 extern uint8_t uart2_rx;
-extern char data[15];
+extern char data[FRAME_BYTE_LENGTH];
 // // int fputc(int ch, FILE *f);
 
  void USART_GetChar(UartStruct* Uartn, char nChar);  // 串口接收到一个字

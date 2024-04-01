@@ -205,12 +205,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 // M(move):底盘移动  R(revolve)：底盘旋转  A(arm)：机械臂移动  S(stop)：底盘停止
-char data[15]={0};
-char data1[15]={0};
-int j=0;
+char data[FRAME_BYTE_LENGTH]={0};
  void USART_GetChar(UartStruct *Uartn,char nChar) //串口接收到一个字节
  {
-	data1[j++]=nChar;
  	if(Uartn->USART_FrameFlag == 1) return;   //如果上次的数据帧还没处理过，则返回
 	
  	if(Uartn->Rx_Cnt==0 && nChar == FRAME_START)

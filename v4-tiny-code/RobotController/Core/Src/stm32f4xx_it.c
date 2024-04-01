@@ -28,6 +28,7 @@
 #include "backend_loop.h"
 #include "usart.h"
 #include "string.h"
+#include "Upper_Data_Process.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -371,14 +372,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	 if(huart->Instance==USART2){
 
 		USART_GetChar(&uart2Data,uart2Data.aRxBuffer);//字节数据保存到缓冲区中
-	 	HAL_UART_Receive_IT(&huart2, (uint8_t *)&uart2Data.aRxBuffer, 1);   //再开启接收中断
-		
 		if(uart2Data.USART_FrameFlag==1){//如果数据帧完整
 	 			uart2Data.Rx_Cnt = 0;
 	 			uart2Data.USART_FrameFlag=0;
-				for(uint8_t i=0;i<15;i++) data[i]=uart2Data.RxBuffer[i];
+				for(uint8_t i=0;i<15;i++)
+					{			
+						data[i]=uart2Data.RxBuffer[i];
+					}
 	 	}
-		
+		HAL_UART_Receive_IT(&huart2, (uint8_t *)&uart2Data.aRxBuffer, 1);   //再开启接收中断
 	 }
 	if(huart->Instance==UART5){
 
