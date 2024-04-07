@@ -55,6 +55,7 @@ typedef struct {
 
 extern uint8_t uart2_rx;
 extern char data[FRAME_BYTE_LENGTH];
+extern char last_data[FRAME_BYTE_LENGTH];
 // // int fputc(int ch, FILE *f);
 
  void USART_GetChar(UartStruct* Uartn, char nChar);  // 串口接收到一个字

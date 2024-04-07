@@ -206,9 +206,10 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 /* USER CODE BEGIN 1 */
 // M(move):底盘移动  R(revolve)：底盘旋转  A(arm)：机械臂移动  S(stop)：底盘停止
 char data[FRAME_BYTE_LENGTH]={0};
+char last_data[FRAME_BYTE_LENGTH]={0};
  void USART_GetChar(UartStruct *Uartn,char nChar) //串口接收到一个字节
  {
- 	if(Uartn->USART_FrameFlag == 1) return;   //如果上次的数据帧还没处理过，则返回
+// 	if(Uartn->USART_FrameFlag == 1) return;   //如果上次的数据帧还没处理过，则返回
 	
  	if(Uartn->Rx_Cnt==0 && nChar == FRAME_START)
  	{
@@ -217,25 +218,25 @@ char data[FRAME_BYTE_LENGTH]={0};
  	else if(Uartn->Rx_Cnt>0) //接收到帧头以后才继续保存
  	{
  		Uartn->RxBuffer[Uartn->Rx_Cnt++]=nChar;  //保存到缓冲区
-// 		if(Uartn->Rx_Cnt>=FRAME_BYTE_LENGTH)  //数据到达一帧上限，保留完整一帧，完整帧flag设置
-// 		{
+ 		if(Uartn->Rx_Cnt>=FRAME_BYTE_LENGTH)  //数据到达一帧上限，保留完整一帧，完整帧flag设置
+ 		{
 
  			if(Uartn->RxBuffer[Uartn->Rx_Cnt-1] == FRAME_END) //如果最后一个字节是帧尾，则数据帧完整
  			{
 				Uartn->Rx_Cnt = 0;
  				Uartn->USART_FrameFlag=1;
  			}
-// 		}
+ 		}
  	}	
  }
 
 
 //printf 重定义函数
-//int fputc(int ch,FILE *f)
-//{
-//    uint8_t temp[1]={ch};
-//    HAL_UART_Transmit(&huart3,temp,1,0xffff);        //UartHandle处理
-//		return 0;
-//}
+int fputc(int ch,FILE *f)
+{
+    uint8_t temp[1]={ch};
+    HAL_UART_Transmit(&huart2,temp,1,0xffff);        //UartHandle处理
+		return 0;
+}
 
 /* USER CODE END 1 */
