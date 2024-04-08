@@ -22,13 +22,19 @@ void data_process(char *data)
 		{
 			float target_theta=ValidData[2]+ValidData[4]*0.1+ValidData[5]*0.01; //ValidData[3] is point
 			float speed=ValidData[6]*1000+ValidData[7]*100+ValidData[8]*10+ValidData[9];
-			chassis_move(100,target_theta,0);
+			chassis_move(speed,target_theta,0);
 			break;
 		}
 		case 'R': //Rotate
 		{
 			float angle=ValidData[3]*100+ValidData[4]*10+ValidData[5];
 			chassis_rotate(angle);
+			break;
+		}
+		case 'C': //Correct
+		{
+			chassis_move(100,1.57,0);
+			HAL_Delay(1);
 			break;
 		}
 		case 'S': //Stop
