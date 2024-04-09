@@ -10,23 +10,24 @@
 
 int8_t direction = 1; // 1:正转 -1:反转
 int32_t last_position = 0; // 上一次的位置
+int64_t pulsenum=0;
 
-int64_t trans_direction_to_pulses(int32_t distance) {
-    int64_t pulsenum = 0;  
-    pulsenum =  abs(distance)*3200/(2*3.14*Pulley_radius);                   //此处用于计算移动距离与脉冲之间的关系
-    return pulsenum;
+void trans_direction_to_pulses(int32_t distance) {
+    pulsenum = 0;  
+		float temp=(abs(distance)*3200/Pulley_radius)*K_correct;                   //此处用于计算移动距离与脉冲之间的关系
+    pulsenum =  (int)temp;
 }
 
 void StepperMotor_SetPosition(int32_t positon) { //传入需要到达的位置,单位mm
     // Send pulses to the Stepper_Stp port to drive the stepper motor
     int32_t distance = positon - last_position;
-    int64_t pulsenum = trans_direction_to_pulses(distance);
+    trans_direction_to_pulses(distance);
     if(distance*direction>0)
     {	
         for(int i=0;i<pulsenum;i++)
         {
             Reversal_Stepper;
-            delay_us(250);   //该步进电机最大空载启动频率为1500pps,最小延时时间为666us,但是实操目前尚未发现问题
+            delay_us(100);   //该步进电机最大空载启动频率为1500pps,最小延时时间为666us,但是实操目前尚未发现问题
 						Reversal_Stepper;   //相当于一个脉冲
         }
     }
@@ -37,7 +38,7 @@ void StepperMotor_SetPosition(int32_t positon) { //传入需要到达的位置,�
         for(int i=0;i<pulsenum;i++)
         {
             Reversal_Stepper;
-						delay_us(200);	
+						delay_us(100);
             Reversal_Stepper;
         }
     }
