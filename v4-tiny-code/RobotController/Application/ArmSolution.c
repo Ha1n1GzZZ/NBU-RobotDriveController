@@ -10,16 +10,72 @@
 // 每个舵机缓慢移动的目标pwm
 uint16_t targetPwm[8] = {250};
 
+int current_arm_state[3] ={49,176,135};     //机械臂当前状态
+int previous_arm_state[3] ={49,176,135};    //机械臂上次状态
+
+int ready_arm_first[3] = {90,45,135};       //准备抓取
 
 void ArmDriver_Init(void){
-  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_4);
-  HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
-  HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
+	HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_4);
+	HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
+
+	//直接给pwm赋初值  初始设定为初始机械臂状态  每次上电前应该把机械臂归位
+	//下面为使用举例
+	Servo_init(0,49);
+	Servo_init(1,176);
+	Servo_init(2,135);
+
+}
+void Servo_init(uint8_t nServo,int angle)
+{
+	volatile uint32_t *currentPwm;//指针指向不同的pwm控制地址，方便统一修改。
+	switch (nServo)
+	{
+	case 0:
+		currentPwm = &htim8.Instance->CCR3;
+		break;
+	case 1:
+		currentPwm = &htim8.Instance->CCR4;
+		break;
+	case 2:
+		currentPwm = &htim12.Instance->CCR1;
+		break;
+	case 3:
+		currentPwm = &htim12.Instance->CCR2;
+		break;
+	case 4:
+		currentPwm = &htim9.Instance->CCR1;
+		break;
+	case 5:
+		currentPwm = &htim9.Instance->CCR2;
+		break;
+	case 6:
+		currentPwm = &htim13.Instance->CCR1;
+		break;
+	case 7:
+		currentPwm = &htim14.Instance->CCR1;
+		break;
+	default:
+		return;
+}
+	if (angle < 0) // 角度限制
+		return;
+	int pwm = angle * 1.0f / 180 / 20 * PWM_DUTY_LIMIT + 250; // 解算出对应的pwm波
+
+	// pwm限制，防止动作错误
+	if (pwm > 1250)
+		pwm = 1250;
+	if (pwm < 250)
+		pwm = 250;
+
+	*currentPwm = pwm;	//设置定时器CCR中PWM值
+	targetPwm[nServo]=pwm;	//设置目标PWM值
 }
 
 /**
@@ -32,7 +88,7 @@ void SetServoAngle(int nServo, float angle)
 {
 	if (angle < 0) // 角度限制
 		return;
-	int pwm = angle * 1.0f / 90 / 20 * PWM_DUTY_LIMIT + 250; // 解算出对应的pwm波
+	int pwm = angle * 1.0f / 180 / 20 * PWM_DUTY_LIMIT + 250; // 解算出对应的pwm波
 
 	// pwm限制，防止动作错误
 	if (pwm > 1250)
@@ -50,12 +106,13 @@ uint8_t ServoTunnerOK(void)
 {
 	if(targetPwm[0] == htim8.Instance->CCR3&& \
 	   targetPwm[1] == htim8.Instance->CCR4&& \
-	   targetPwm[2] == htim12.Instance->CCR1&& \
-	   targetPwm[3] == htim12.Instance->CCR2&& \
-	   targetPwm[4] == htim9.Instance->CCR1&& \
-	   targetPwm[5] == htim9.Instance->CCR2&& \
-	   targetPwm[6] == htim13.Instance->CCR1&& \
-	   targetPwm[7] == htim14.Instance->CCR1) 
+	   targetPwm[2] == htim12.Instance->CCR1)
+//	   targetPwm[3] == htim12.Instance->CCR2&& \
+//	   targetPwm[4] == htim9.Instance->CCR1&& \
+//	   targetPwm[5] == htim9.Instance->CCR2&& \
+//	   targetPwm[6] == htim13.Instance->CCR1&& \
+//	   targetPwm[7] == htim14.Instance->CCR1) 
+//	if (targetPwm[0] >= htim8.Instance->CCR3-10&&targetPwm[0] <= htim8.Instance->CCR3+10) 
 		return 1;
 	else
 		return 0;
@@ -95,18 +152,33 @@ void slowPwm(uint8_t nServo)
 		return;
 	}
 
-	int8_t flag = 2;
+	
+	int error=(*currentPwm > targetPwm[nServo] ? (*currentPwm - targetPwm[nServo]) : (targetPwm[nServo] - *currentPwm));
+	int8_t flag = 1;
 	if (*currentPwm > targetPwm[nServo])
-		flag = -2; // 如果当前pwm值大于目标pwm值，将flag设置为-1
+		flag = -1; // 如果当前pwm值大于目标pwm值，将flag设置为-1
 	if (*currentPwm == targetPwm[nServo])
 		flag = 0; // 如果当前pwm值等于目标pwm值，将flag设置为0
-	if (*currentPwm > targetPwm[nServo] ? (*currentPwm - targetPwm[nServo] > 10) : (targetPwm[nServo] - *currentPwm > 10)) {
-    	// 处理差值大于10的情况,三目运算符 不能用abs，因为是无符号类似的变量
-		flag = 10 * flag; // 如果当前pwm值小于目标pwm值，它们之间的差值大于10，flag需要乘以10
-	}
+	if(error > 45){
+		flag = 15 * flag;}
+	else if(error>25){
+		flag = 8 * flag;}
+	else if(error>10){
+		flag = 3 * flag;}
+//	if (*currentPwm > targetPwm[nServo] ? (*currentPwm - targetPwm[nServo] > 30) : (targetPwm[nServo] - *currentPwm > 30)) {
+//    	// 处理差值大于10的情况,三目运算符 不能用abs，因为是无符号类似的变量
+//		flag = 25 * flag; // 如果当前pwm值小于目标pwm值，它们之间的差值大于20，flag需要乘以13
+//	}
 	// 将当前pwm值加上flag，实现缓慢移动的效果
 	*currentPwm = (*currentPwm) + flag;
 }
+
+/**
+	*@brief 机械臂状态切换
+	*@param nextState 下个状态
+	*@param step 角度步进
+*/
+
 
 
 /**
