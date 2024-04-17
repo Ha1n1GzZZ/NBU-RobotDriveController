@@ -66,7 +66,7 @@ void Backend_Loop(void){
 //    }
 
     /* 每100ms执行一次 */
-    if(CYCLE_OK(100)){
+    if(CYCLE_OK(30)){
         /*以下为机械臂缓慢移动*/
 		if (ServoTunnerOK() == 0) // 未调节完成
 		{
