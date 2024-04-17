@@ -2,12 +2,14 @@
 #include "string.h"
 #include "chassis_move.h"
 #include "Stepper_Motor.h"
-int16_t ValidData[15];
+#include "ArmSolution.h"
+
+int16_t ValidData[12];
 void char_to_int(char *data)
 {
-	uint8_t temp[15]={0};
+	uint8_t temp[12]={0};
 	ValidData[1]=data[1];
-	for(uint8_t i=2;i<15;i++)
+	for(uint8_t i=2;i<12;i++)
 	{
 		ValidData[i]=data[i]-'0';
 	}
@@ -21,8 +23,18 @@ void data_process(char *data)
 		case 'M':  //Move
 		{
 			float target_theta=ValidData[2]+ValidData[4]*0.1+ValidData[5]*0.01; //ValidData[3] is point
-			float speed=ValidData[6]*1000+ValidData[7]*100+ValidData[8]*10+ValidData[9];
-			chassis_move(speed,target_theta,0);
+			float speed=ValidData[6]*100+ValidData[7]*10+ValidData[8];
+			uint8_t Is_detecting=ValidData[9];
+			uint8_t direction=ValidData[10];
+			if(Is_detecting==0)
+				chassis_move(speed,target_theta,0);
+			else if(Is_detecting==1)
+			{
+				if(direction==0) //go forward&right
+						chassis_move(50,0.06,0);
+				else if(direction==1) //go forward&left
+					chassis_move(50,3.146,0);
+			}
 			break;
 		}
 		case 'R': //Rotate
@@ -42,24 +54,60 @@ void data_process(char *data)
 			chassis_move(0,0,0);
 			break;
 		}
-		case 'A': //Arm移动
-		{
-			int32_t distance=ValidData[2]*1000+ValidData[3]*100+ValidData[4]*10+ValidData[5];
-			StepperMotor_SetPosition(distance);
-			int8_t Grab_floor=ValidData[6];
+		case 'G': //Arm移动
+		{			
+			int8_t Grab_floor=ValidData[2];
 			if(Grab_floor==1)
 			{
-							//机械臂抓取
+				SetServoAngle(0,114);			//机械臂抓取
+				SetServoAngle(1,43);
+				SetServoAngle(2,250); //catch
 			}
 			else if(Grab_floor==2)
 			{
-				
+				SetServoAngle(0,76);			//机械臂抓取
+				SetServoAngle(1,85);
+				SetServoAngle(2,250); //catch
 			}
 			else if(Grab_floor==3)
 			{
-				
+				SetServoAngle(0,94);			//机械臂抓取
+				SetServoAngle(1,88);
+				SetServoAngle(2,250); //catch
 			}
 			break;
+		}
+		case 'D':  //detect
+		{
+			uint8_t floor=ValidData[2];
+			if(floor==0)                 //detect the lists
+			{
+				StepperMotor_SetPosition(370);
+				SetServoAngle(0,80);
+				SetServoAngle(1,135);
+				SetServoAngle(2,89);
+			}
+			else if(floor==1)
+			{
+				StepperMotor_SetPosition(5);
+				SetServoAngle(0,114);
+				SetServoAngle(1,116);
+				SetServoAngle(2,89);
+			}
+			else if(floor==2)
+			{
+				StepperMotor_SetPosition(325);
+				SetServoAngle(0,76);
+				SetServoAngle(1,164);
+				SetServoAngle(2,89);
+			}
+			else if(floor==3)
+			{
+				StepperMotor_SetPosition(415);
+				SetServoAngle(0,94);			//机械臂抓取
+				SetServoAngle(1,165);
+				SetServoAngle(2,89); //catch
+			}
 		}
 	}
 		
