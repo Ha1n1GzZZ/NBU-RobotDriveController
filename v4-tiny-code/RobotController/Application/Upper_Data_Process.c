@@ -3,6 +3,7 @@
 #include "chassis_move.h"
 #include "Stepper_Motor.h"
 #include "ArmSolution.h"
+#include "stdio.h"
 
 int16_t ValidData[12];
 void char_to_int(char *data)
@@ -35,18 +36,21 @@ void data_process(char *data)
 				else if(direction==1) //go forward&left
 					chassis_move(50,3.146,0);
 			}
+			printf("ok\n");
 			break;
 		}
 		case 'R': //Rotate
 		{
 			float angle=ValidData[3]*100+ValidData[4]*10+ValidData[5];
 			chassis_rotate(angle);
+			printf("ok\n");
 			break;
 		}
 		case 'C': //Correct
 		{
 			chassis_move(100,1.57,0);
 			HAL_Delay(1);
+			printf("ok\n");
 			break;
 		}
 		case 'S': //Stop
@@ -54,60 +58,31 @@ void data_process(char *data)
 			chassis_move(0,0,0);
 			break;
 		}
-		case 'G': //Arm移动
+		case 'G': //Arm_Grab
 		{			
-			int8_t Grab_floor=ValidData[2];
-			if(Grab_floor==1)
-			{
-				SetServoAngle(0,114);			//机械臂抓取
-				SetServoAngle(1,43);
-				SetServoAngle(2,250); //catch
-			}
-			else if(Grab_floor==2)
-			{
-				SetServoAngle(0,76);			//机械臂抓取
-				SetServoAngle(1,85);
-				SetServoAngle(2,250); //catch
-			}
-			else if(Grab_floor==3)
-			{
-				SetServoAngle(0,94);			//机械臂抓取
-				SetServoAngle(1,88);
-				SetServoAngle(2,250); //catch
-			}
+			uint8_t Grab_floor=ValidData[2];
+			Arm_Grab(Grab_floor);
+			printf("ok\n");
 			break;
 		}
 		case 'D':  //detect
 		{
 			uint8_t floor=ValidData[2];
-			if(floor==0)                 //detect the lists
-			{
-				StepperMotor_SetPosition(370);
-				SetServoAngle(0,80);
-				SetServoAngle(1,135);
-				SetServoAngle(2,89);
-			}
-			else if(floor==1)
-			{
-				StepperMotor_SetPosition(5);
-				SetServoAngle(0,114);
-				SetServoAngle(1,116);
-				SetServoAngle(2,89);
-			}
-			else if(floor==2)
-			{
-				StepperMotor_SetPosition(325);
-				SetServoAngle(0,76);
-				SetServoAngle(1,164);
-				SetServoAngle(2,89);
-			}
-			else if(floor==3)
-			{
-				StepperMotor_SetPosition(415);
-				SetServoAngle(0,94);			//机械臂抓取
-				SetServoAngle(1,165);
-				SetServoAngle(2,89); //catch
-			}
+			Arm_Detect(floor);
+			printf("ok\n");
+			break;
+		}
+		case 'P': //Put
+		{
+			Arm_Put();
+			printf("ok\n");
+			break;
+		}
+		case 'H': //Hou Tui
+		{
+			chassis_move(100,4.71,0);
+			printf("ok\n");
+			break;
 		}
 	}
 		
