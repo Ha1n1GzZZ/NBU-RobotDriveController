@@ -34,13 +34,16 @@ extern "C" {
 
 extern UART_HandleTypeDef huart5;
 
+extern UART_HandleTypeDef huart1;
+
 extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN Private defines */
 
 
-#define FRAME_BYTE_LENGTH 12 // 串口通讯帧数据的字节数（含帧头和帧尾），
-                          
+#define FRAME_BYTE_LENGTH 12 // 串口通讯帧数据的字节数（含帧头和帧尾
+//#define FRAME_BYTE_LENGTH 9 // for arm test
+//      #define FRAME_START 0xA5     // for arm test                 
 #define FRAME_START 0x42     // 帧头(Begin)
 #define FRAME_END 0x5A       // 帧尾(Z)
 
@@ -52,7 +55,7 @@ typedef struct {
 } UartStruct;
 
  extern UartStruct uart2Data;  // usart2的数据结构体
-
+extern UartStruct uart1Data;
 extern uint8_t uart2_rx;
 extern char data[FRAME_BYTE_LENGTH];
 extern char last_data[FRAME_BYTE_LENGTH];
@@ -64,6 +67,7 @@ extern char last_data[FRAME_BYTE_LENGTH];
 /* USER CODE END Private defines */
 
 void MX_UART5_Init(void);
+void MX_USART1_UART_Init(void);
 void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */

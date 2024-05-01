@@ -29,6 +29,7 @@
 #include "usart.h"
 #include "string.h"
 #include "Upper_Data_Process.h"
+#include "ArmSolution.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -69,6 +70,7 @@ extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim7;
 extern UART_HandleTypeDef huart5;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
@@ -255,6 +257,20 @@ void TIM4_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles USART1 global interrupt.
+  */
+void USART1_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART1_IRQn 0 */
+
+  /* USER CODE END USART1_IRQn 0 */
+  HAL_UART_IRQHandler(&huart1);
+  /* USER CODE BEGIN USART1_IRQn 1 */
+
+  /* USER CODE END USART1_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART2 global interrupt.
   */
 void USART2_IRQHandler(void)
@@ -369,23 +385,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   UNUSED(huart);
 
 	
-	 if(huart->Instance==USART2){
+	 if(huart->Instance==USART1){
 
-		USART_GetChar(&uart2Data,uart2Data.aRxBuffer);//字节数据保存到缓冲区中
-		if(uart2Data.USART_FrameFlag==1){//如果数据帧完整
-	 			uart2Data.Rx_Cnt = 0;
-	 			uart2Data.USART_FrameFlag=0;
-				for(uint8_t i=0;i<15;i++)
+		USART_GetChar(&uart1Data,uart1Data.aRxBuffer);//字节数据保存到缓冲区中 
+		if(uart1Data.USART_FrameFlag==1){//如果数据帧完整
+	 			uart1Data.Rx_Cnt = 0;
+	 			uart1Data.USART_FrameFlag=0;
+				for(uint8_t i=0;i<12;i++)
 					{			
-						data[i]=uart2Data.RxBuffer[i];
+						data[i]=uart1Data.RxBuffer[i];    
+						uart1Data.RxBuffer[i]=0;
 					}
+//			SetServoAngle(0,uart2Data.RxBuffer[1]);
+//			SetServoAngle(1,uart2Data.RxBuffer[2]);
+//			SetServoAngle(2,uart2Data.RxBuffer[3]);
 	 	}
-		HAL_UART_Receive_IT(&huart2, (uint8_t *)&uart2Data.aRxBuffer, 1);   //再开启接收中断
+		HAL_UART_Receive_IT(&huart1, (uint8_t *)&uart1Data.aRxBuffer, 1);   //再开启接收中断
+
 	 }
 	if(huart->Instance==UART5){
 
 		
 	}
+
 }
 
 

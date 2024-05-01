@@ -115,6 +115,7 @@ int main(void)
   MX_TIM14_Init();
   MX_UART5_Init();
   MX_USART2_UART_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   MPU6500_DMP_Init(); // MPU6500加速度传感器初始化
@@ -157,29 +158,40 @@ int main(void)
 
 		if(temp!=0){
 			data_process(data);
+//			strcpy(last_data,data);
 			for(uint8_t i=0;i<FRAME_BYTE_LENGTH;i++)
 			last_data[i]=data[i];
 		}
     //============================按键实现转速改变=====================
-//    if (Key_Released(1) == 1)
-//    {
+    if (Key_Released(1) == 1)
+    {
 //      nSpeed += 100;
-////			StepperMotor_SetPosition(500);
-//       chassis_move(100,1.57,0);
+//				SetServoAngle(0,76);
+//				SetServoAngle(1,165);
+//				SetServoAngle(2,89);
+			Arm_Detect(2);
+//					Arm_Grab(1);
+//				SetServoAngle(0,114);
+//				SetServoAngle(1,116);
+//				SetServoAngle(2,89);
+//       chassis_move(100,1.57+3.14,0);
 ////      MotorController_SetSpeed(1, -nSpeed);
 ////      MotorController_SetSpeed(2, nSpeed);
 ////      MotorController_SetSpeed(3,nSpeed);
 ////      MotorController_SetSpeed(4,nSpeed);
-//    }
-//    if (Key_Released(2) == 1)
-//    {
-//      nSpeed -= 100;
-//			StepperMotor_SetPosition(20);
-//      MotorController_SetSpeed(1, -nSpeed);
-//      MotorController_SetSpeed(2, nSpeed);
+    }
+    if (Key_Released(2) == 1)
+    {
+//			Arm_Put();
+//			SetServoAngle(0,80);chassis_move(50,0.1,0);
+//			SetServoAngle(1,130);
+			Arm_Detect(3);
+//				StepperMotor_SetPosition(60);
+////      MotorController_SetSpeed(1, -nSpeed);
+////      MotorController_SetSpeed(2, nSpeed);
 //      // MotorController_SetSpeed(3,nSpeed);
 //      // MotorController_SetSpeed(4,nSpeed);
-//    }
+    }
     
   }
   /* USER CODE END 3 */
