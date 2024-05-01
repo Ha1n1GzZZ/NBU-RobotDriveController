@@ -4,16 +4,27 @@
 #include "math.h"
 #include "tim.h"
 #include "stdlib.h"
-
+#include "Stepper_Motor.h"
 #define PWM_DUTY_LIMIT 10000 // PWM占空比周期为10000,代表20ms    250-1250 代表 0-180度
 
 // 每个舵机缓慢移动的目标pwm
 uint16_t targetPwm[8] = {250};
 
-int current_arm_state[3] ={49,176,135};     //机械臂当前状态
-int previous_arm_state[3] ={49,176,135};    //机械臂上次状态
 
-int ready_arm_first[3] = {90,45,135};       //准备抓取
+int current_arm_state[2] ={80,176};  //机械臂当前状态
+int previous_arm_state[2] ={80,176}; //机械臂上次状态
+
+int Arm_Detect_floor0[2] = {80,100}; //
+int Arm_Detect_floor1[2] = {122,88}; //
+int Arm_Detect_floor2[2] = {104,106};//
+int Arm_Detect_floor3[2] = {118,106};//
+
+int Arm_Grab_floor1[2] = {104,30};   //
+int Arm_Grab_floor2[2] = {85,62};    //
+int Arm_Grab_floor3[2] = {88,68};    //
+
+int Arm_Putdown[2] = {120,160};      //
+
 
 void ArmDriver_Init(void){
 	HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
@@ -27,9 +38,9 @@ void ArmDriver_Init(void){
 
 	//直接给pwm赋初值  初始设定为初始机械臂状态  每次上电前应该把机械臂归位
 	//下面为使用举例
-	Servo_init(0,49);
+	Servo_init(0,80);
 	Servo_init(1,176);
-	Servo_init(2,135);
+	Servo_init(2,80);
 
 }
 void Servo_init(uint8_t nServo,int angle)
@@ -160,11 +171,11 @@ void slowPwm(uint8_t nServo)
 	if (*currentPwm == targetPwm[nServo])
 		flag = 0; // 如果当前pwm值等于目标pwm值，将flag设置为0
 	if(error > 45){
-		flag = 15 * flag;}
+		flag = 10 * flag;}
 	else if(error>25){
-		flag = 8 * flag;}
+		flag = 5 * flag;}
 	else if(error>10){
-		flag = 3 * flag;}
+		flag = 1 * flag;}
 //	if (*currentPwm > targetPwm[nServo] ? (*currentPwm - targetPwm[nServo] > 30) : (targetPwm[nServo] - *currentPwm > 30)) {
 //    	// 处理差值大于10的情况,三目运算符 不能用abs，因为是无符号类似的变量
 //		flag = 25 * flag; // 如果当前pwm值小于目标pwm值，它们之间的差值大于20，flag需要乘以13
@@ -194,6 +205,125 @@ void ArmSolution(double x, double y)
  * @param {*}自动根据目标位置进行整个抓取
  * @return {*}
  */
-void Arm_Grab()
+void Arm_Grab(uint8_t floor)
 {
+	switch(floor)
+	{
+		case 1:
+		{
+			State2State(Arm_Grab_floor1,2);
+			while(!ServoTunnerOK());
+			SetServoAngle(2,250); //catch
+			while(!ServoTunnerOK());
+			//catch&move to back
+			//控制舵机 0 角度增加；回机械臂
+			break;
+		}
+		case 2:
+		{  
+			State2State(Arm_Grab_floor2,2);
+			while(!ServoTunnerOK());
+			SetServoAngle(2,250); //catch
+			while(!ServoTunnerOK());
+			//舵机 0 角度减小； 舵机 1 角度增加； 收回机械臂
+			break;	
+		}
+		case 3:
+		{
+			State2State(Arm_Grab_floor3,2);
+			while(!ServoTunnerOK());
+			SetServoAngle(2,250); //catch
+			while(!ServoTunnerOK());
+			//舵机 0 角度减小； 舵机 1 角度增加； 收回机械臂
+			break;
+		}
+	}
+}
+
+void Arm_Detect(uint8_t floor)
+{
+	switch(floor)
+	{
+		case 0: //识别清单
+		{
+			StepperMotor_SetPosition(370);    //自上而下22.7cm
+			State2State(Arm_Detect_floor0,2);
+			SetServoAngle(2,80);
+			break;
+		}
+		case 1:
+		{
+			StepperMotor_SetPosition(5);      //自上而下75.3cm       
+			State2State(Arm_Detect_floor1,2);
+			SetServoAngle(2,80);
+			while(!ServoTunnerOK());
+			break;
+		}
+		case 2:
+		{
+			StepperMotor_SetPosition(260);          //自上而下41.3cm
+			State2State(Arm_Detect_floor2,2);
+			SetServoAngle(2,80);
+			while(!ServoTunnerOK());
+			break;
+		}
+		case 3:
+		{
+			StepperMotor_SetPosition(397);        //自上而下16.3cm
+			State2State(Arm_Detect_floor3,2);
+			SetServoAngle(2,80);
+			while(!ServoTunnerOK());
+			break;
+		}
+	}
+}
+
+void Arm_Put(void)
+{
+			State2State(Arm_Putdown,2);
+			while(!ServoTunnerOK());
+			SetServoAngle(2,80);
+			while(!ServoTunnerOK());
+}
+
+/**
+	*@brief 舵机状态切换
+	*@param nextState 下个状态
+	*@param step 角度步进
+*/
+void State2State(int* nextState,double setStep){
+	int flag[2] = {0,0};
+	int maxAngle = 0;
+	
+	for(int i=0;i<2;i++){
+		previous_arm_state[i] = current_arm_state[i];
+		current_arm_state[i] = nextState[i];
+		int angle = abs(current_arm_state[i]-previous_arm_state[i]);
+		if(angle>0) 
+			flag[i] = 1;//该舵机状态需要切换
+		if(angle>maxAngle) 
+			maxAngle = angle;
+	}
+	int iter = maxAngle/setStep +1;//迭代次数
+	double step[2];//每个舵机的步进角度
+	for(int i = 0;i<2;i++){
+		step[i] = (current_arm_state[i]-previous_arm_state[i])*1.0/iter;
+	}
+	for(int i = 1;i<iter;i++){
+		for(int j = 0;j<2;j++){
+			if(flag[j]==1){
+
+				int angle = previous_arm_state[j]+ i*step[j];
+				SetServoAngle(j,angle);
+				
+			}
+		}
+		HAL_Delay(20);
+	}
+	//最终状态
+
+	SetServoAngle(0,current_arm_state[0]);
+	SetServoAngle(1,current_arm_state[1]);
+	
+	HAL_Delay(200);
 }
