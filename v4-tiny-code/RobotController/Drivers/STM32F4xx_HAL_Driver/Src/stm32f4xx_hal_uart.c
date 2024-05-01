@@ -1149,6 +1149,7 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pD
 
     /* Process Locked */
     __HAL_LOCK(huart);
+      __HAL_UNLOCK(huart);
 
     huart->ErrorCode = HAL_UART_ERROR_NONE;
     huart->gState = HAL_UART_STATE_BUSY_TX;
@@ -1369,7 +1370,7 @@ HAL_StatusTypeDef HAL_UART_Receive_IT(UART_HandleTypeDef *huart, uint8_t *pData,
 
     /* Process Locked */
     __HAL_LOCK(huart);
-
+//      __HAL_UNLOCK(huart);
     /* Set Reception type to Standard reception */
     huart->ReceptionType = HAL_UART_RECEPTION_STANDARD;
 
