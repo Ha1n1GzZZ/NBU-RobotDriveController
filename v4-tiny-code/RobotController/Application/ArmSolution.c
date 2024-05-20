@@ -5,25 +5,30 @@
 #include "tim.h"
 #include "stdlib.h"
 #include "Stepper_Motor.h"
+#include "Upper_Data_Process.h"
 #define PWM_DUTY_LIMIT 10000 // PWM占空比周期为10000,代表20ms    250-1250 代表 0-180度
 
-// 每个舵机缓慢移动的目标pwm
+// 每个舵机缓慢移动的目标pwm                                                                                                             
 uint16_t targetPwm[8] = {250};
 
 
-int current_arm_state[2] ={80,176};  //机械臂当前状态
-int previous_arm_state[2] ={80,176}; //机械臂上次状态
+int current_arm_state[2] ={70,176};  //机械臂当前状态
+int previous_arm_state[2] ={70,176}; //机械臂上次状态
 
-int Arm_Detect_floor0[2] = {80,100}; //
-int Arm_Detect_floor1[2] = {122,88}; //
-int Arm_Detect_floor2[2] = {104,106};//
-int Arm_Detect_floor3[2] = {118,106};//
+int Arm_Detect_floor0[2] = {80,100}; //80,100
+int Arm_Detect_floor1[2] = {122,88}; //122,88 
+int Arm_Detect_floor2[2] = {104,119};//104,106
+int Arm_Detect_floor3[2] = {118,101};//118,100
 
-int Arm_Grab_floor1[2] = {104,30};   //
-int Arm_Grab_floor2[2] = {85,62};    //
-int Arm_Grab_floor3[2] = {88,68};    //
+int Arm_Grab_floor1[2] = {101,30};   //105,19
+int Arm_Grab_floor2[2] = {78,65};    //85,50
+int Arm_Grab_floor3[2] = {77,70};    //85,57
+int Arm_Grab_cube1[2] = {110,16};   //110,10
+int Arm_Grab_cube2[2] = {86,49};    //93,36
+int Arm_Grab_cube3[2] = {83,58};    //90,47
 
-int Arm_Putdown[2] = {120,160};      //
+
+int Arm_Putdown[2] = {120,140};      //
 
 
 void ArmDriver_Init(void){
@@ -38,7 +43,7 @@ void ArmDriver_Init(void){
 
 	//直接给pwm赋初值  初始设定为初始机械臂状态  每次上电前应该把机械臂归位
 	//下面为使用举例
-	Servo_init(0,80);
+	Servo_init(0,70);
 	Servo_init(1,176);
 	Servo_init(2,80);
 
@@ -211,30 +216,72 @@ void Arm_Grab(uint8_t floor)
 	{
 		case 1:
 		{
-			State2State(Arm_Grab_floor1,2);
-			while(!ServoTunnerOK());
-			SetServoAngle(2,250); //catch
-			while(!ServoTunnerOK());
-			//catch&move to back
-			//控制舵机 0 角度增加；回机械臂
+			if(Is_cube) //防止抓的物品是方块时夹太紧导致过流
+			{
+				State2State(Arm_Grab_cube1,2.2);
+				while(!ServoTunnerOK());
+				SetServoAngle(2,254); //catch
+				while(!ServoTunnerOK());
+				SetServoAngle(1,30);
+				while(!ServoTunnerOK());
+			}
+			else
+			{
+				State2State(Arm_Grab_floor1,2.2);
+				while(!ServoTunnerOK());
+				SetServoAngle(2,250); //catch
+				while(!ServoTunnerOK());
+				SetServoAngle(1,42);
+				while(!ServoTunnerOK());
+				//catch&move to back
+				//控制舵机 0 角度增加；回机械臂
+			}
 			break;
 		}
 		case 2:
 		{  
-			State2State(Arm_Grab_floor2,2);
-			while(!ServoTunnerOK());
-			SetServoAngle(2,250); //catch
-			while(!ServoTunnerOK());
-			//舵机 0 角度减小； 舵机 1 角度增加； 收回机械臂
+			if(Is_cube)
+			{
+				State2State(Arm_Grab_cube2,2.2);
+				while(!ServoTunnerOK());
+				SetServoAngle(2,254); //catch
+				while(!ServoTunnerOK());
+				SetServoAngle(1,60);
+				while(!ServoTunnerOK());
+			}
+			else
+			{
+				State2State(Arm_Grab_floor2,2.2);
+				while(!ServoTunnerOK());
+				SetServoAngle(2,250); //catch
+				while(!ServoTunnerOK());
+				SetServoAngle(1,78);
+				while(!ServoTunnerOK());
+				//舵机 0 角度减小； 舵机 1 角度增加； 收回机械臂
+			}
 			break;	
 		}
 		case 3:
 		{
-			State2State(Arm_Grab_floor3,2);
-			while(!ServoTunnerOK());
-			SetServoAngle(2,250); //catch
-			while(!ServoTunnerOK());
-			//舵机 0 角度减小； 舵机 1 角度增加； 收回机械臂
+			if(Is_cube)
+			{
+				State2State(Arm_Grab_cube3,2.2);
+				while(!ServoTunnerOK());
+				SetServoAngle(2,250); //catch
+				while(!ServoTunnerOK());
+				SetServoAngle(1,70);
+				while(!ServoTunnerOK());				
+			}
+			else
+			{
+				State2State(Arm_Grab_floor3,2.2);
+				while(!ServoTunnerOK());
+				SetServoAngle(2,250); //catch
+				while(!ServoTunnerOK());
+				SetServoAngle(1,83);
+				while(!ServoTunnerOK());
+				//舵机 0 角度减小； 舵机 1 角度增加； 收回机械臂
+			}
 			break;
 		}
 	}
@@ -246,31 +293,31 @@ void Arm_Detect(uint8_t floor)
 	{
 		case 0: //识别清单
 		{
-			StepperMotor_SetPosition(370);    //自上而下22.7cm
-			State2State(Arm_Detect_floor0,2);
+			StepperMotor_SetPosition(348);    //自上而下26.3cm（从最顶上到滑块的下部平滑区域）
+			State2State(Arm_Detect_floor0,2.2);
 			SetServoAngle(2,80);
 			break;
 		}
 		case 1:
 		{
-			StepperMotor_SetPosition(5);      //自上而下75.3cm       
-			State2State(Arm_Detect_floor1,2);
+			StepperMotor_SetPosition(5);      //     
+			State2State(Arm_Detect_floor1,2.2);
 			SetServoAngle(2,80);
 			while(!ServoTunnerOK());
 			break;
 		}
 		case 2:
 		{
-			StepperMotor_SetPosition(260);          //自上而下41.3cm
-			State2State(Arm_Detect_floor2,2);
+			StepperMotor_SetPosition(240);          //自上而下47cm
+			State2State(Arm_Detect_floor2,2.2);
 			SetServoAngle(2,80);
 			while(!ServoTunnerOK());
 			break;
 		}
 		case 3:
 		{
-			StepperMotor_SetPosition(397);        //自上而下16.3cm
-			State2State(Arm_Detect_floor3,2);
+			StepperMotor_SetPosition(386);        //自上而下17.5cm
+			State2State(Arm_Detect_floor3,2.2);
 			SetServoAngle(2,80);
 			while(!ServoTunnerOK());
 			break;
@@ -280,7 +327,7 @@ void Arm_Detect(uint8_t floor)
 
 void Arm_Put(void)
 {
-			State2State(Arm_Putdown,2);
+			State2State(Arm_Putdown,2.2);
 			while(!ServoTunnerOK());
 			SetServoAngle(2,80);
 			while(!ServoTunnerOK());
