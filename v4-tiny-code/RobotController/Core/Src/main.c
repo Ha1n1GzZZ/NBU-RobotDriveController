@@ -36,7 +36,8 @@
 #include "chassis_move.h"
 #include "Stepper_Motor.h"
 #include "Upper_Data_Process.h"
-#include "string.h"
+#include "string.h" 
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -139,7 +140,7 @@ int main(void)
   MotorController_Enable(ENABLE);
   int nSpeed = 0; // 转速变量
 
-
+  
   //=================舵机控制测试=============
   ArmDriver_Init();
 
@@ -163,29 +164,30 @@ int main(void)
 			last_data[i]=data[i];
 		}
     //============================按键实现转速改变=====================
-    if (Key_Released(1) == 1)
+    if (Key_Released(1) == 1)      //不识别清单，直接执行任务
     {
+//			Arm_Detect(2);
 //      nSpeed += 100;
-//				SetServoAngle(0,76);
-//				SetServoAngle(1,165);
-//				SetServoAngle(2,89);
-			Arm_Detect(2);
 //					Arm_Grab(1);
-//				SetServoAngle(0,114);
-//				SetServoAngle(1,116);
-//				SetServoAngle(2,89);
-//       chassis_move(100,1.57+3.14,0);
-////      MotorController_SetSpeed(1, -nSpeed);
-////      MotorController_SetSpeed(2, nSpeed);
-////      MotorController_SetSpeed(3,nSpeed);
-////      MotorController_SetSpeed(4,nSpeed);
+//			HAL_Delay(10050);			
+      printf("ma\n");
+//			HAL_Delay(1000);
+//				Arm_Grab(1);
+//				HAL_Delay(1000);
+//				Arm_Put();
+				
+			
+				
     }
-    if (Key_Released(2) == 1)
-    {
+    if (Key_Released(2) == 1)    //识别清单并完成任务
+    {       
+//			Arm_Detect(3);
+//			
+			HAL_Delay(10050);
+      printf("ok\n");
+//			chassis_rotate(180);
+//			chassis_move(100,1.57,0);
 //			Arm_Put();
-//			SetServoAngle(0,80);chassis_move(50,0.1,0);
-//			SetServoAngle(1,130);
-			Arm_Detect(3);
 //				StepperMotor_SetPosition(60);
 ////      MotorController_SetSpeed(1, -nSpeed);
 ////      MotorController_SetSpeed(2, nSpeed);
