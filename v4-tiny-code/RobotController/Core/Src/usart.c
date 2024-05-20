@@ -314,7 +314,7 @@ char last_data[FRAME_BYTE_LENGTH]={0};
 int fputc(int ch,FILE *f)
 {
     uint8_t temp[1]={ch};
-    HAL_UART_Transmit(&huart1,temp,1,0xffff);        //UartHandle处理
+    HAL_UART_Transmit(&huart2,temp,1,0xffff);        //UartHandle处理
 
 		return 0;
 }

@@ -1149,7 +1149,7 @@ HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, const uint8_t *pD
 
     /* Process Locked */
     __HAL_LOCK(huart);
-      __HAL_UNLOCK(huart);
+//      __HAL_UNLOCK(huart);
 
     huart->ErrorCode = HAL_UART_ERROR_NONE;
     huart->gState = HAL_UART_STATE_BUSY_TX;
