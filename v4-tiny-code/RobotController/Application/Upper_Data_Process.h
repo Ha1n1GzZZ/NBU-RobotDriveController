@@ -5,5 +5,6 @@
 
 void data_process(char *data);
 void char_to_int(char *data);
+extern uint8_t Is_cube;
 
 #endif

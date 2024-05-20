@@ -4,7 +4,8 @@
 #include "Stepper_Motor.h"
 #include "ArmSolution.h"
 #include "stdio.h"
-
+#include "motor_controller.h"
+uint8_t Is_cube=0;
 int16_t ValidData[12];
 void char_to_int(char *data)
 {
@@ -32,9 +33,9 @@ void data_process(char *data)
 			else if(Is_detecting==1)
 			{
 				if(direction==0) //go forward&right
-						chassis_move(50,0.06,0);
+						chassis_move(50,0.07,0);
 				else if(direction==1) //go forward&left
-					chassis_move(50,3.146,0);
+					chassis_move(50,3.17,0);
 			}
 			printf("ok\n");
 			break;
@@ -50,7 +51,12 @@ void data_process(char *data)
 		{
 			chassis_move(100,1.57,0);
 			HAL_Delay(1);
-			printf("ok\n");
+			break;
+		}
+		case 'J': //little correct when focus on goods
+		{
+			chassis_move(100,1.57,0);
+			HAL_Delay(1);
 			break;
 		}
 		case 'S': //Stop
@@ -61,15 +67,53 @@ void data_process(char *data)
 		case 'G': //Arm_Grab
 		{			
 			uint8_t Grab_floor=ValidData[2];
+			Is_cube=ValidData[3];
 			Arm_Grab(Grab_floor);
 			printf("ok\n");
 			break;
 		}
 		case 'D':  //detect
 		{
-			uint8_t floor=ValidData[2];
+			uint8_t floor=ValidData[2];				
 			Arm_Detect(floor);
 			printf("ok\n");
+			break;
+		}
+		case 'N': //theta correct
+		{
+			float Cur_theta=ValidData[3]*10+ValidData[4];
+			if(ValidData[2]=='-'-'0')
+			{
+				Cur_theta=-Cur_theta;
+			}
+			if(Cur_theta>0)
+			{   
+				MotorController_SetSpeed(1,-50);		   //forward&left circle
+				MotorController_SetSpeed(2,-50);
+				MotorController_SetSpeed(3,-50);
+				MotorController_SetSpeed(4,-50);
+				HAL_Delay((int)Cur_theta*50);
+				chassis_move(0,0,0);
+				HAL_Delay(1);
+				chassis_move(100,1.57,0);
+				HAL_Delay(600);
+				chassis_move(0,0,0);
+				printf("ok\n");
+			}
+			else if(Cur_theta<0)
+			{
+				MotorController_SetSpeed(1,50);		
+				MotorController_SetSpeed(2,50);
+				MotorController_SetSpeed(3,50);
+				MotorController_SetSpeed(4,50);
+				HAL_Delay((int)(fabs(Cur_theta))*50);
+				chassis_move(0,0,0);
+				HAL_Delay(1);
+				chassis_move(100,1.57,0);
+				HAL_Delay(600);
+				chassis_move(0,0,0);
+				printf("ok\n");
+			}
 			break;
 		}
 		case 'P': //Put
