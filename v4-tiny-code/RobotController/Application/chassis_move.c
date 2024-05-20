@@ -43,7 +43,7 @@ void chassis_rotate(float rotation_angle)		//rotation_angle：°，目标电机�
 	float target_omega=0.5;		//旋转速度
 	chassis_move(0,0,target_omega);		//使底盘以角速度旋转
 
-	int32_t target_nCnt =(rotation_angle / 360.000f) * 135000 * 4;	//原公式为：(((rotation_angle / 360.000f) * chassis.Radius * 2 * 3.14f)/(MOTOR_WHEEL_DIAMETER * 2 * 3.14f))* 13500 * 4; 	//计算转够角度编码器增加的脉冲数
+	int32_t target_nCnt =(((rotation_angle / 360.00f) * chassis.Radius * 2 * 3.14f)/(MOTOR_WHEEL_DIAMETER * 2 * 3.14f))* 13500 * 4;//(rotation_angle / 360.000f) * 135000 * 4;	//原公式为：(((rotation_angle / 360.000f) * chassis.Radius * 2 * 3.14f)/(MOTOR_WHEEL_DIAMETER * 2 * 3.14f))* 13500 * 4; 	//计算转够角度编码器增加的脉冲数
 	int32_t nCnt0 = Encoder_GetEncCount(1);		// 获取编码器初始计数值
 	
 	while(1)      //时刻判断是否转够角度
